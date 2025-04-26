@@ -1,4 +1,4 @@
-# ✨ Minify Middleware for Fiber (v0.1.0) ⚡
+# ✨ Minify Middleware for Fiber ⚡
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/NarmadaWeb/minify)](https://goreportcard.com/report/github.com/NarmadaWeb/minify)
 [![GoDoc](https://godoc.org/github.com/NarmadaWeb/minify?status.svg)](https://godoc.org/github.com/NarmadaWeb/minify)
