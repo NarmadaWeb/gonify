@@ -1,0 +1,45 @@
+name: Run golangci-lint
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.golangci.yml'
+      - '.golangci.yaml'
+      - '.github/workflows/golangci-lint.yml'
+
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.golangci.yml'
+      - '.golangci.yaml'
+      - '.github/workflows/golangci-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  golangci-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          check-latest: true
+          cache: true
+
+      - name: Install Golangci-Lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
+
+      - name: Run Golangci in backend
+        run: golangci-lint run ./... --fix --timeout 5m0s
