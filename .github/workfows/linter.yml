@@ -2,7 +2,8 @@ name: Run golangci-lint
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - v2
     paths:
       - '**.go'
       - 'go.mod'
@@ -12,7 +13,8 @@ on:
       - '.github/workflows/golangci-lint.yml'
 
   pull_request:
-    branches: [ main ]
+    branches:
+      - v2
     paths:
       - '**.go'
       - 'go.mod'
