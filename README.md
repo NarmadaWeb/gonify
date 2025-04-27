@@ -1,4 +1,4 @@
-# ✨ Minify Middleware for Fiber ⚡
+# ✨ Gonify Middleware for Fiber (v0.1.0) ⚡
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/NarmadaWeb/minify)](https://goreportcard.com/report/github.com/NarmadaWeb/minify)
 [![GoDoc](https://godoc.org/github.com/NarmadaWeb/minify?status.svg)](https://godoc.org/github.com/NarmadaWeb/minify)
@@ -24,7 +24,7 @@ A [Fiber](https://gofiber.io/) middleware that automatically minifies HTTP respo
 ## 📦 Installation
 
 ```bash
-go get github.com/NarmadaWeb/minify
+go get github.com/NarmadaWeb/fiber-gonify
 ```
 
 ## 🛠️ Usage
@@ -41,15 +41,15 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/NarmadaWeb/minify"
+	"github.com/NarmadaWeb/gonify/v2"
 )
 
 func main() {
 	app := fiber.New()
 	app.Use(logger.New()) // Optional: logger
 
-	// Use minify middleware with default config
-	app.Use(minify.New())
+	// Use gonify middleware with default config
+	app.Use(gonify.New())
 
 	// Define your routes
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -84,14 +84,14 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/NarmadaWeb/minify"
+	"github.com/NarmadaWeb/gonify/v2"
 )
 
 func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 
-	app.Use(minify.New(minify.Config{
+	app.Use(gonify.New(gonify.Config{
 		MinifyHTML:       true,
 		MinifyCSS:        true,
 		MinifyJS:         false, // Disable JS minification
@@ -172,15 +172,16 @@ type Config struct {
 When calling minify.New() without arguments:
 
 ```go
+// ConfigDefault is the default config
 var ConfigDefault = Config{
-    Next:             nil,
-    SuppressWarnings: false,
-    MinifyHTML:       true,
-    MinifyCSS:        true,
-    MinifyJS:         true,
-    MinifyJSON:       true,
-    MinifyXML:        true,
-    MinifySVG:        true,
+	Next:             nil,
+	SuppressWarnings: false,
+	MinifyHTML:       true,
+	MinifyCSS:        true,
+	MinifyJS:         true,
+	MinifyJSON:       false,
+	MinifyXML:        false,
+	MinifySVG:        false,
 }
 ```
 
