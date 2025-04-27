@@ -2,24 +2,26 @@ name: Run golangci-lint
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - '**.go'
       - 'go.mod'
       - 'go.sum'
       - '.golangci.yml'
       - '.golangci.yaml'
-      - '.github/workflows/golangci-lint.yml'
+      - '.github/workflows/linter.yml'
 
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - '**.go'
       - 'go.mod'
       - 'go.sum'
       - '.golangci.yml'
       - '.golangci.yaml'
-      - '.github/workflows/golangci-lint.yml'
+      - '.github/workflows/linter.yml'
 
 permissions:
   contents: read
