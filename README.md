@@ -1,4 +1,4 @@
-# ✨ Gonify Middleware for Fiber (v0.1.0) ⚡
+# ✨ Gonify Middleware for Fiber ⚡
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/NarmadaWeb/minify)](https://goreportcard.com/report/github.com/NarmadaWeb/minify)
 [![GoDoc](https://godoc.org/github.com/NarmadaWeb/minify?status.svg)](https://godoc.org/github.com/NarmadaWeb/minify)
@@ -24,7 +24,7 @@ A [Fiber](https://gofiber.io/) middleware that automatically minifies HTTP respo
 ## 📦 Installation
 
 ```bash
-go get github.com/NarmadaWeb/fiber-gonify
+go get github.com/NarmadaWeb/gonify
 ```
 
 ## 🛠️ Usage
