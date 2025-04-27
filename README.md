@@ -24,7 +24,7 @@ A [Fiber](https://gofiber.io/) middleware that automatically minifies HTTP respo
 ## 📦 Installation
 
 ```bash
-go get github.com/NarmadaWeb/gonify
+go get github.com/NarmadaWeb/gonify/v2
 ```
 
 ## 🛠️ Usage
