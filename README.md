@@ -1,8 +1,7 @@
 # ✨ Gonify Middleware for Fiber ⚡
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/NarmadaWeb/minify)](https://goreportcard.com/report/github.com/NarmadaWeb/minify)
-[![GoDoc](https://godoc.org/github.com/NarmadaWeb/minify?status.svg)](https://godoc.org/github.com/NarmadaWeb/minify)
-![Version](https://img.shields.io/badge/Version-v1.1.0-blue.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/NarmadaWeb/gonify)](https://goreportcard.com/report/github.com/NarmadaWeb/gonify)
+[![GoDoc](https://godoc.org/github.com/NarmadaWeb/gonify?status.svg)](https://godoc.org/github.com/NarmadaWeb/gonify)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Fiber](https://img.shields.io/badge/Fiber-v2-9cf)
 
