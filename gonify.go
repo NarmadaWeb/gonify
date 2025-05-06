@@ -5,7 +5,7 @@ import (
 	"mime"
 	"net/http"
 	"regexp"
-	"sync" // Import sync package for sync.Once
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -17,9 +17,6 @@ import (
 	"github.com/tdewolff/minify/v2/svg"
 	"github.com/tdewolff/minify/v2/xml"
 )
-
-// Version of the middleware
-const Version = "2.0.2"
 
 // Config defines the config for middleware.
 type Config struct {
