@@ -5,10 +5,10 @@ import (
 	"mime"
 	"net/http"
 	"regexp"
-	"sync" // Import sync package for sync.Once
+	"sync"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/log"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
@@ -18,13 +18,10 @@ import (
 	"github.com/tdewolff/minify/v2/xml"
 )
 
-// Version of the middleware
-const Version = "2.0.1"
-
 // Config defines the config for middleware.
 type Config struct {
 	// Optional. Default: nil
-	Next func(c *fiber.Ctx) bool
+	Next func(c fiber.Ctx) bool
 
 	// Optional. Default: false
 	SuppressWarnings bool
@@ -83,7 +80,7 @@ func New(config ...Config) fiber.Handler {
 	})
 
 	// Return middleware handler
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		if cfg.Next != nil && cfg.Next(c) {
 			return c.Next()
 		}
