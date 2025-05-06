@@ -1,4 +1,4 @@
-module github.com/NarmadaWeb/gonify/v2
+module github.com/NarmadaWeb/gonify/v3
 
 go 1.23.0
 
