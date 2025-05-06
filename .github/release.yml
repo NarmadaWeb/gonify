@@ -25,3 +25,9 @@ changelog:
     - title: 'Other Changes'
       labels:
         - '*'
+
+contributors:
+  exclude:
+    users:
+      - dependabot[bot]
+      - dependabot
