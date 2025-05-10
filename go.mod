@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/gofiber/fiber/v3 v3.0.0-beta.4
-	github.com/tdewolff/minify/v2 v2.23.4
+	github.com/tdewolff/minify/v2 v2.23.5
 )
 
 require (
