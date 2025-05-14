@@ -1,5 +1,4 @@
 ## golangci 1.64
-
 issues:
   modules-download-mode: readonly
   exclude-dirs-use-default: false
