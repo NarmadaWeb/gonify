@@ -5,7 +5,7 @@ import (
 	"mime"
 	"net/http"
 	"regexp"
-	"sync" // Import sync package for sync.Once
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -17,9 +17,6 @@ import (
 	"github.com/tdewolff/minify/v2/svg"
 	"github.com/tdewolff/minify/v2/xml"
 )
-
-// Version of the middleware
-const Version = "2.0.2"
 
 // Config defines the config for middleware.
 type Config struct {
@@ -35,18 +32,40 @@ type Config struct {
 	MinifyJSON bool
 	MinifyXML  bool
 	MinifySVG  bool
+
+	// HTML minifier options
+	HTMLKeepDocumentTags bool
+	HTMLKeepEndTags      bool
+	HTMLKeepQuotes       bool
+	HTMLKeepWhitespace   bool
+
+	// JS minifier options
+	JSPrecision int
+
+	// CSS minifier options
+	CSSPrecision int
+
+	// SVG minifier options
+	SVGPrecision int
 }
 
 // ConfigDefault is the default config
 var ConfigDefault = Config{
-	Next:             nil,
-	SuppressWarnings: false,
-	MinifyHTML:       true,
-	MinifyCSS:        true,
-	MinifyJS:         true,
-	MinifyJSON:       false,
-	MinifyXML:        false,
-	MinifySVG:        false,
+	Next:                 nil,
+	SuppressWarnings:    false,
+	MinifyHTML:          true,
+	MinifyCSS:           true,
+	MinifyJS:            true,
+	MinifyJSON:          false,
+	MinifyXML:           false,
+	MinifySVG:           false,
+	HTMLKeepDocumentTags: true,
+	HTMLKeepEndTags:     true,
+	HTMLKeepQuotes:      false,
+	HTMLKeepWhitespace:  false,
+	JSPrecision:         0,
+	CSSPrecision:        0,
+	SVGPrecision:        0,
 }
 
 // Variables
@@ -56,14 +75,6 @@ var (
 	jsContentTypeRegexp   *regexp.Regexp
 	jsonContentTypeRegexp *regexp.Regexp
 	xmlContentTypeRegexp  *regexp.Regexp
-
-	contentTypes = struct {
-		html, css, svg string
-	}{
-		html: "text/html",
-		css:  "text/css",
-		svg:  "image/svg+xml",
-	}
 )
 
 // Function to initialize regex patterns once
@@ -75,6 +86,7 @@ func initializePatterns() {
 
 // New creates a new middleware handler
 func New(config ...Config) fiber.Handler {
+	// Set default config
 	cfg := configDefault(config...)
 
 	once.Do(func() {
@@ -82,18 +94,19 @@ func New(config ...Config) fiber.Handler {
 		m = createMinifier(cfg)
 	})
 
-	// Return middleware handler
 	return func(c *fiber.Ctx) error {
+		// Don't execute middleware if Next returns true
 		if cfg.Next != nil && cfg.Next(c) {
 			return c.Next()
 		}
 
+		// Continue stack
 		if err := c.Next(); err != nil {
 			return err
 		}
 
+		// Only minify successful responses
 		status := c.Response().StatusCode()
-
 		if status < http.StatusOK || status >= http.StatusMultipleChoices || status == http.StatusNoContent {
 			return nil
 		}
@@ -104,12 +117,12 @@ func New(config ...Config) fiber.Handler {
 		}
 
 		// Parse media type
-		mediaType, _, err := mime.ParseMediaType(string(contentType))
+		mediaType, params, err := mime.ParseMediaType(string(contentType))
 		if err != nil {
 			if !cfg.SuppressWarnings {
 				log.Warnf("Minify: Failed to parse media type '%s': %v", contentType, err)
 			}
-			return nil // Cannot parse media type
+			return nil
 		}
 
 		// Check if the media type should be minified based on config
@@ -120,27 +133,28 @@ func New(config ...Config) fiber.Handler {
 		// Get original response body
 		originalBody := c.Response().Body()
 		if len(originalBody) == 0 {
-			return nil // Nothing to minify
+			return nil
 		}
 
-		// Minify the body into a buffer
+		// Minify the body
 		var minifiedBuffer bytes.Buffer
 		if err := m.Minify(mediaType, &minifiedBuffer, bytes.NewReader(originalBody)); err != nil {
 			if !cfg.SuppressWarnings {
-				log.Errorf("Minify: Failed to minify type '%s': %v", mediaType, err)
+				log.Warnf("Minify: Failed to minify type '%s': %v", mediaType, err)
 			}
 			return nil
 		}
 
 		minifiedBody := minifiedBuffer.Bytes()
 
-		if len(minifiedBody) < len(originalBody) {
-			// Set the minified body
+		// Only replace if minification was successful and actually reduced size
+		if len(minifiedBody) > 0 && len(minifiedBody) < len(originalBody) {
 			c.Response().SetBodyRaw(minifiedBody)
-			// Set the correct Content-Length
 			c.Response().Header.SetContentLength(len(minifiedBody))
-			// Ensure Content-Type remains the same (SetBodyRaw might clear it)
-			c.Response().Header.SetContentTypeBytes(contentType)
+			// Preserve original content type and charset
+			if charset, ok := params["charset"]; ok {
+				c.Response().Header.SetContentType(mediaType + "; charset=" + charset)
+			}
 		}
 
 		return nil
@@ -148,40 +162,39 @@ func New(config ...Config) fiber.Handler {
 }
 
 func createMinifier(cfg Config) *minify.M {
-	minifier := minify.New()
+	m := minify.New()
+	m.Add("text/html", &html.Minifier{
+		KeepDocumentTags: cfg.HTMLKeepDocumentTags,
+		KeepEndTags:      cfg.HTMLKeepEndTags,
+		KeepQuotes:       cfg.HTMLKeepQuotes,
+		KeepWhitespace:   cfg.HTMLKeepWhitespace,
+	})
 
-	if cfg.MinifyHTML {
-		minifier.Add(contentTypes.html, &html.Minifier{
-			KeepDocumentTags: true,
-			KeepEndTags:      true,
-		})
-	}
-	if cfg.MinifyCSS {
-		minifier.Add(contentTypes.css, &css.Minifier{})
-	}
-	if cfg.MinifyJS {
-		minifier.AddRegexp(jsContentTypeRegexp, &js.Minifier{})
-	}
-	if cfg.MinifyJSON {
-		minifier.AddRegexp(jsonContentTypeRegexp, &json.Minifier{})
-	}
-	if cfg.MinifyXML {
-		minifier.AddRegexp(xmlContentTypeRegexp, &xml.Minifier{})
-	}
-	if cfg.MinifySVG {
-		minifier.Add(contentTypes.svg, &svg.Minifier{})
-	}
+	m.Add("text/css", &css.Minifier{
+		Precision: cfg.CSSPrecision,
+	})
 
-	return minifier
+	m.AddRegexp(jsContentTypeRegexp, &js.Minifier{
+		Precision: cfg.JSPrecision,
+	})
+
+	m.AddRegexp(jsonContentTypeRegexp, &json.Minifier{})
+	m.AddRegexp(xmlContentTypeRegexp, &xml.Minifier{})
+
+	m.Add("image/svg+xml", &svg.Minifier{
+		Precision: cfg.SVGPrecision,
+	})
+
+	return m
 }
 
 func shouldMinify(mediaType string, cfg Config) bool {
 	switch {
-	case cfg.MinifyHTML && mediaType == contentTypes.html:
+	case cfg.MinifyHTML && mediaType == "text/html":
 		return true
-	case cfg.MinifyCSS && mediaType == contentTypes.css:
+	case cfg.MinifyCSS && mediaType == "text/css":
 		return true
-	case cfg.MinifySVG && mediaType == contentTypes.svg:
+	case cfg.MinifySVG && mediaType == "image/svg+xml":
 		return true
 	case cfg.MinifyJS && jsContentTypeRegexp.MatchString(mediaType):
 		return true
@@ -200,8 +213,15 @@ func configDefault(config ...Config) Config {
 		return ConfigDefault
 	}
 
-	// Override default config
 	cfg := config[0]
+
+	// Set default values for optional HTML minifier options
+	if !cfg.HTMLKeepDocumentTags && cfg.MinifyHTML {
+		cfg.HTMLKeepDocumentTags = ConfigDefault.HTMLKeepDocumentTags
+	}
+	if !cfg.HTMLKeepEndTags && cfg.MinifyHTML {
+		cfg.HTMLKeepEndTags = ConfigDefault.HTMLKeepEndTags
+	}
 
 	return cfg
 }
