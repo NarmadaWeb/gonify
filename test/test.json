@@ -1,0 +1,20 @@
+{
+	"name": "Test Gonify JSON",
+	"version": "1.0.0"  ,
+	"description": "Contoh file JSON dengan spasi dan baris baru ekstra.",
+	"keywords": [
+	  "json",
+	  "test"   ,
+	  "minify"
+	],
+	"author": {
+	  "name": "Penguji",
+	  "email": "penguji@example.com"
+	}  ,
+	"active": true,
+	"count" : 123,
+	"nested": {
+	  "key1": "value1"   ,
+	  "key2": null
+	}
+  }

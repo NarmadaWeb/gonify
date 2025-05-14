@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Gonify HTML Page</title>
+    <link rel="stylesheet" href="/test.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        h1 {
+            color: green;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+        }
+        p {
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hello World!</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <section>
+                <p>Ini adalah paragraf dengan teks yang lebih rapi.</p>
+                <p>Paragraf kedua dengan konten yang bermanfaat.</p>
+                <button id="actionBtn">Klik Saya</button>
+            </section>
+
+            <article>
+                <h2>Artikel Terbaru</h2>
+                <p>Konten artikel yang menarik dan informatif.</p>
+            </article>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Gonify HTML. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        function greet() {
+            const userName = "Username";
+            console.log("Hello, " + userName + "!");
+        }
+        greet();
+
+        document.getElementById('actionBtn').addEventListener('click', function() {
+            alert('Tombol diklik!');
+        });
+    </script>
+    <script src="/test.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ff6b6b" />
+            <stop offset="100%" stop-color="#ffa3a3" />
+        </linearGradient>
+        <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#4b3869" />
+            <stop offset="100%" stop-color="#63ace5" />
+        </linearGradient>
+    </defs>
+
+    <g transform="translate(100, 100)">
+        <path d="M-60,-20 Q-80,-40 -80,-60 Q-60,-80 -40,-60 Q-20,-40 -40,-20 Z"
+              fill="url(#wingGradient)" stroke="#333" stroke-width="1"/>
+
+
+        <path d="M-60,20 Q-80,40 -80,60 Q-60,80 -40,60 Q-20,40 -40,20 Z"
+              fill="url(#wingGradient)" stroke="#333" stroke-width="1"/>
+
+        <path d="M60,-20 Q80,-40 80,-60 Q60,-80 40,-60 Q20,-40 40,-20 Z"
+              fill="url(#wingGradient)" stroke="#333" stroke-width="1"/>
+
+
+        <path d="M60,20 Q80,40 80,60 Q60,80 40,60 Q20,40 40,20 Z"
+              fill="url(#wingGradient)" stroke="#333" stroke-width="1"/>
+
+
+        <rect x="-5" y="-60" width="10" height="120" rx="5"
+              fill="url(#bodyGradient)" stroke="#333" stroke-width="1"/>
+
+
+        <circle cx="0" cy="-70" r="8" fill="#4b3869" stroke="#333" stroke-width="1"/>
+
+
+        <path d="M-5,-78 Q-15,-90 -20,-85" stroke="#4b3869" stroke-width="2" fill="none"/>
+        <circle cx="-20" cy="-85" r="2" fill="#4b3869"/>
+
+
+        <path d="M5,-78 Q15,-90 20,-85" stroke="#4b3869" stroke-width="2" fill="none"/>
+        <circle cx="20" cy="-85" r="2" fill="#4b3869"/>
+
+        <circle cx="-50" cy="-40" r="5" fill="#ffffff" opacity="0.7"/>
+        <circle cx="-50" cy="40" r="5" fill="#ffffff" opacity="0.7"/>
+        <circle cx="50" cy="-40" r="5" fill="#ffffff" opacity="0.7"/>
+        <circle cx="50" cy="40" r="5" fill="#ffffff" opacity="0.7"/>
+    </g>
+</svg>

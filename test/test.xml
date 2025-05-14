@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+    <book category="PROGRAMMING">
+        <title lang="en">Belajar Go</title>
+        <author>John Doe</author>
+        <year>2023</year>
+        <price>29.99</price>
+    </book>
+    <book category="WEB">
+        <title lang="en">Mastering Fiber</title>
+        <author>Jane Smith</author>
+        <year>2024</year>
+        <price>39.99</price>
+    </book>
+</library>

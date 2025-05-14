@@ -1,0 +1,30 @@
+/* Ini adalah file CSS untuk pengujian */
+/* Komentar ini seharusnya hilang setelah minifikasi */
+
+body {
+    font-family:    Arial, sans-serif; /* Pilihan font */
+    background-color:   #f0f0f0;
+    margin:  20px;
+}
+
+.container {
+    padding:    15px;
+    border:     1px solid #ccc; /* Border solid */
+    background-color: #ffffff; /* Warna putih */
+}
+
+/* Komentar lain */
+h1 {
+    color:      #333333;
+    text-align: center;
+}
+
+p {
+    line-height:  1.6;
+    color:        #555555; /* Warna teks paragraf */
+}
+
+/* Aturan tidak terpakai yang mungkin dihapus oleh beberapa minifier agresif, tapi tdewolff/minify biasanya tidak */
+.unused-class {
+    opacity: 0.5;
+}
