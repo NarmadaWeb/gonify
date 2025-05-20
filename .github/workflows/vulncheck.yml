@@ -3,6 +3,7 @@ name: Run govulncheck on Go Code
 on:
   push:
     branches:
+      - main
       - v2
     paths:
       - '**.go'
