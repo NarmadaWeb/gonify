@@ -56,17 +56,20 @@ func main() {
     // Define your routes
     app.Get("/", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
-        return c.SendString("<html><body><h1>Hello, Minified World!</h1></body></html>")
+        htmlContent := "<html><body><h1>Hello, Minified World!</h1></body></html>"
+        return c.SendString(htmlContent)
     })
 
     app.Get("/styles.css", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, "text/css; charset=utf-8")
-        return c.SendString("body { /* comment */ color: #ff0000; padding: 10px; }")
+        cssContent := "body { /* comment */ color: #ff0000; padding: 10px; }"
+        return c.SendString(cssContent)
     })
 
     app.Get("/data.json", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-        return c.SendString(`{ "message": "This is   extra   spaced   JSON." }`)
+        jsonContent := `{ "message": "This is   extra   spaced   JSON." }`
+        return c.SendString(jsonContent)
     })
 
     log.Fatal(app.Listen(":3000"))
@@ -110,19 +113,22 @@ func main() {
     app.Get("/", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
         // Example HTML string
-        return c.SendString("<html><!-- comment --><body>   <h1>Will be minified</h1>   </body></html>")
+        html := "<html><!-- comment --><body><h1>Will be minified</h1></body></html>"
+        return c.SendString(html)
     })
 
     app.Get("/script.js", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJavaScriptCharsetUTF8)
         // Example JS string
-        return c.SendString("function hello() { /* comment */ console.log('Not minified'); }")
+        js := "function hello() { /* comment */ console.log('Not minified'); }"
+        return c.SendString(js)
     })
 
     app.Get("/api/raw/data", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
         // Example JSON string that will not be minified due to Next config
-        return c.SendString(`{ "raw": true,    "spacing": "preserved" }`)
+        jsonStr := `{ "raw": true,    "spacing": "preserved" }`
+        return c.SendString(jsonStr)
     })
 
     log.Fatal(app.Listen(":3000"))
@@ -159,8 +165,7 @@ type Config struct {
     // Default: true
     MinifyJS bool
 
-    // MinifyJSON: Enable for JSON content types
-    // (e.g., 'application/json')
+    // MinifyJSON: Enable for JSON content types (e.g., 'application/json')
     // Default: true
     MinifyJSON bool
 
