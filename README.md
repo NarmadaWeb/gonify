@@ -5,7 +5,9 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Fiber](https://img.shields.io/badge/Fiber-v2-9cf)
 
-A [Fiber](https://gofiber.io/) middleware that automatically minifies HTTP responses before sending them to clients. Powered by the efficient [tdewolff/minify/v2](https://github.com/tdewolff/minify) library.
+A [Fiber](https://gofiber.io/) middleware that automatically minifies HTTP
+responses before sending them to clients. Powered by the efficient
+[tdewolff/minify/v2](https://github.com/tdewolff/minify) library.
 
 🔹 Reduces transferred data size
 🔹 Saves bandwidth
@@ -30,43 +32,47 @@ go get github.com/NarmadaWeb/gonify/v2
 
 ### Basic Usage (Default Configuration)
 
-The simplest way is using default configuration which enables minification for all supported content types.
+The simplest way is using default configuration which enables minification
+for all supported content types.
 
 ```go
 package main
 
 import (
-	"log"
+    "log"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/NarmadaWeb/gonify/v2"
+    "github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2/middleware/logger"
+    "github.com/NarmadaWeb/gonify/v2"
 )
 
 func main() {
-	app := fiber.New()
-	app.Use(logger.New()) // Optional: logger
+    app := fiber.New()
+    app.Use(logger.New()) // Optional: logger
 
-	// Use gonify middleware with default config
-	app.Use(gonify.New())
+    // Use gonify middleware with default config
+    app.Use(gonify.New())
 
-	// Define your routes
-	app.Get("/", func(c *fiber.Ctx) error {
-		c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
-		return c.SendString("<html><body><h1>Hello, Minified World!</h1></body></html>")
-	})
+    // Define your routes
+    app.Get("/", func(c *fiber.Ctx) error {
+        c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
+        htmlContent := "<html><body><h1>Hello, Minified World!</h1></body></html>"
+        return c.SendString(htmlContent)
+    })
 
-	app.Get("/styles.css", func(c *fiber.Ctx) error {
+    app.Get("/styles.css", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, "text/css; charset=utf-8")
-        return c.SendString("body { /* comment */ color: #ff0000; padding: 10px; }")
+        cssContent := "body { /* comment */ color: #ff0000; padding: 10px; }"
+        return c.SendString(cssContent)
     })
 
     app.Get("/data.json", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-        return c.SendString(`{ "message": "This is   extra   spaced   JSON." }`)
+        jsonContent := `{ "message": "This is   extra   spaced   JSON." }`
+        return c.SendString(jsonContent)
     })
 
-	log.Fatal(app.Listen(":3000"))
+    log.Fatal(app.Listen(":3000"))
 }
 ```
 
@@ -78,47 +84,54 @@ Provide a minify.Config struct to New() for custom behavior.
 package main
 
 import (
-	"log"
-	"strings"
+    "log"
+    "strings"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/NarmadaWeb/gonify/v2"
+    "github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2/middleware/logger"
+    "github.com/NarmadaWeb/gonify/v2"
 )
 
 func main() {
-	app := fiber.New()
-	app.Use(logger.New())
+    app := fiber.New()
+    app.Use(logger.New())
 
-	app.Use(gonify.New(gonify.Config{
-		MinifyHTML:       true,
-		MinifyCSS:        true,
-		MinifyJS:         false, // Disable JS minification
-		MinifyJSON:       true,
-		MinifyXML:        false, // Disable XML minification
-		MinifySVG:        true,
-		SuppressWarnings: false,
-		Next: func(c *fiber.Ctx) bool {
-			return strings.HasPrefix(c.Path(), "/api/raw/")
-		},
-	}))
+    app.Use(gonify.New(gonify.Config{
+        MinifyHTML:       true,
+        MinifyCSS:        true,
+        MinifyJS:         false, // Disable JS minification
+        MinifyJSON:       true,
+        MinifyXML:        false, // Disable XML minification
+        MinifySVG:        true,
+        SuppressWarnings: false,
+        Next: func(c *fiber.Ctx) bool {
+            // Skip minification for paths starting with /api/raw/
+            return strings.HasPrefix(c.Path(), "/api/raw/")
+        },
+    }))
 
-	app.Get("/", func(c *fiber.Ctx) error {
+    app.Get("/", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
-        return c.SendString("<html><!-- comment --><body>   <h1>Will be minified</h1>   </body></html>")
+        // Example HTML string
+        html := "<html><!-- comment --><body><h1>Will be minified</h1></body></html>"
+        return c.SendString(html)
     })
 
     app.Get("/script.js", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJavaScriptCharsetUTF8)
-        return c.SendString("function hello() { /* comment */ console.log('Not minified'); }")
+        // Example JS string
+        js := "function hello() { /* comment */ console.log('Not minified'); }"
+        return c.SendString(js)
     })
 
     app.Get("/api/raw/data", func(c *fiber.Ctx) error {
         c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-        return c.SendString(`{ "raw": true,    "spacing": "preserved" }`)
+        // Example JSON string that will not be minified due to Next config
+        jsonStr := `{ "raw": true,    "spacing": "preserved" }`
+        return c.SendString(jsonStr)
     })
 
-	log.Fatal(app.Listen(":3000"))
+    log.Fatal(app.Listen(":3000"))
 }
 ```
 
@@ -148,14 +161,16 @@ type Config struct {
     MinifyCSS bool
 
     // MinifyJS: Enable for JavaScript content types
+    // (e.g., 'application/javascript', 'text/javascript')
     // Default: true
     MinifyJS bool
 
-    // MinifyJSON: Enable for JSON content types
+    // MinifyJSON: Enable for JSON content types (e.g., 'application/json')
     // Default: true
     MinifyJSON bool
 
     // MinifyXML: Enable for XML content types
+    // (e.g., 'application/xml', 'text/xml')
     // Default: true
     MinifyXML bool
 
@@ -165,7 +180,6 @@ type Config struct {
 }
 ```
 
-
 ## 🔧 Default Configuration
 
 When calling minify.New() without arguments:
@@ -173,20 +187,21 @@ When calling minify.New() without arguments:
 ```go
 // ConfigDefault is the default config
 var ConfigDefault = Config{
-	Next:             nil,
-	SuppressWarnings: false,
-	MinifyHTML:       true,
-	MinifyCSS:        true,
-	MinifyJS:         true,
-	MinifyJSON:       false,
-	MinifyXML:        false,
-	MinifySVG:        false,
+    Next:             nil,
+    SuppressWarnings: false,
+    MinifyHTML:       true,
+    MinifyCSS:        true,
+    MinifyJS:         true,
+    MinifyJSON:       false, // Note: JSON is false by default
+    MinifyXML:        false, // Note: XML is false by default
+    MinifySVG:        false, // Note: SVG is false by default
 }
 ```
 
 ## 🤝 Contributing
 
-Contributions are always welcome! Fork the repository, create a feature branch, and submit a Pull Request.
+Contributions are always welcome! Fork the repository, create a feature branch,
+and submit a Pull Request.
 
 ## 📜 License
 
