@@ -52,20 +52,20 @@ type Config struct {
 // ConfigDefault is the default config
 var ConfigDefault = Config{
 	Next:                 nil,
-	SuppressWarnings:    false,
-	MinifyHTML:          true,
-	MinifyCSS:           true,
-	MinifyJS:            true,
-	MinifyJSON:          false,
-	MinifyXML:           false,
-	MinifySVG:           false,
+	SuppressWarnings:     false,
+	MinifyHTML:           true,
+	MinifyCSS:            true,
+	MinifyJS:             true,
+	MinifyJSON:           false,
+	MinifyXML:            false,
+	MinifySVG:            false,
 	HTMLKeepDocumentTags: true,
-	HTMLKeepEndTags:     true,
-	HTMLKeepQuotes:      false,
-	HTMLKeepWhitespace:  false,
-	JSPrecision:         0,
-	CSSPrecision:        0,
-	SVGPrecision:        0,
+	HTMLKeepEndTags:      true,
+	HTMLKeepQuotes:       false,
+	HTMLKeepWhitespace:   false,
+	JSPrecision:          0,
+	CSSPrecision:         0,
+	SVGPrecision:         0,
 }
 
 // Variables
