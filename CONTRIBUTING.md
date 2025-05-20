@@ -19,6 +19,7 @@ friendly, inclusive, and respectful environment for all contributors.
 (Ensure you create this `CODE_OF_CONDUCT.md` file, perhaps adapted from the
 Contributor Covenant).
 
+
 ## 💡 How Can I Contribute?
 
 There are many ways to contribute to Gonify:
@@ -99,6 +100,7 @@ smoothly:
       description (e.g., `Closes #123`).
     * Our team will review your PR. There might be discussions or requests for
       changes. We'll try to respond as quickly as possible!
+
 
 ## 🔧 Setting Up Your Development Environment (Optional, but Helpful)
 
