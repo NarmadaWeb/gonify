@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/gofiber/fiber/v3 v3.0.0-beta.5
-	github.com/tdewolff/minify/v2 v2.23.11
+	github.com/tdewolff/minify/v2 v2.24.0
 )
 
 require (
@@ -18,7 +18,7 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/tdewolff/parse/v2 v2.8.2-0.20250806174018-50048bb39781 // indirect
+	github.com/tdewolff/parse/v2 v2.8.3 // indirect
 	github.com/tinylib/msgp v1.3.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.64.0 // indirect
