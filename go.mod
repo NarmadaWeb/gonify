@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/gofiber/fiber/v3 v3.0.0-rc.1
-	github.com/tdewolff/minify/v2 v2.24.2
+	github.com/tdewolff/minify/v2 v2.24.3
 )
 
 require (
