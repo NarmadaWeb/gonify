@@ -1,154 +1,25 @@
-## golangci 1.64
-
-issues:
+version: "2"
+run:
   modules-download-mode: readonly
-  exclude-dirs-use-default: false
-  exclude-dirs:
-    - internal/
-    - vendor/
-    - views/
-    - testdata/
-    - scripts/
-    - bin/
-    - dist/
-    - .git/
-    - .github/
-    - .vscode/
-    - .idea/
-
-output:
-  sort-results: true
-
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-    disable-default-exclusions: true
-
-  errchkjson:
-    report-no-exported: true
-
-  exhaustive:
-    default-signifies-exhaustive: true
-
-  gocritic:
-    disabled-checks:
-      - ifElseChain
-
-  gofumpt:
-    module-path: github.com/NarmadaWeb/bertani-ai
-    extra-rules: true
-
-  gosec:
-    config:
-      global:
-        audit: true
-
-  govet:
-    check-shadowing: true
-    enable-all: true
-    disable:
-      - shadow
-      - fieldalignment
-      - loopclosure
-
-  grouper:
-    import-require-single-import: true
-    import-require-grouping: true
-
-  misspell:
-    locale: US
-
-  nolintlint:
-    require-explanation: true
-    require-specific: true
-
-  nonamedreturns:
-    report-error-in-defer: true
-
-  predeclared:
-    q: true
-
-  promlinter:
-    strict: true
-
-  revive:
-    enable-all-rules: true
-    rules:
-      - name: add-constant
-        disabled: true
-      - name: argument-limit
-        disabled: true
-      - name: banned-characters
-        disabled: true
-      - name: cognitive-complexity
-        disabled: true
-      - name: cyclomatic
-        disabled: true
-      - name: early-return
-        severity: warning
-        disabled: true
-      - name: exported
-        disabled: true
-      - name: file-header
-        disabled: true
-      - name: function-result-limit
-        disabled: true
-      - name: function-length
-        disabled: true
-      - name: line-length-limit
-        disabled: true
-      - name: max-public-structs
-        disabled: true
-      - name: modifies-parameter
-        disabled: true
-      - name: nested-structs
-        disabled: true
-      - name: package-comments
-        disabled: true
-
-  stylecheck:
-    checks:
-      - all
-      - -ST1000
-      - -ST1020
-      - -ST1021
-      - -ST1022
-
-  tagliatelle:
-    case:
-      rules:
-        json: snake
-
-  wrapcheck:
-    ignorePackageGlobs:
-      - github.com/NarmadaWeb/bertani-ai/*
-
+  allow-serial-runners: true
 linters:
+  default: none
   enable:
     - asasalint
     - asciicheck
     - bidichk
-    - bodyclose
-    - containedctx
     - contextcheck
     - dogsled
-    - durationcheck
-    - errcheck
     - errchkjson
     - errname
     - errorlint
-    - exhaustive
-    - forcetypeassert
     - goconst
     - gocritic
-    - gofmt
-    - gofumpt
-    - goimports
     - gomoddirectives
     - goprintffuncname
-    - gosimple
     - govet
     - grouper
+    - ineffassign
     - loggercheck
     - misspell
     - nakedret
@@ -162,18 +33,114 @@ linters:
     - reassign
     - revive
     - rowserrcheck
-    - sqlclosecheck
     - staticcheck
-    - stylecheck
     - thelper
-    - typecheck
     - unconvert
     - unparam
     - unused
     - usestdlibvars
     - wastedassign
     - whitespace
-
-
-  disable:
-    - wrapcheck
+  settings:
+    errcheck:
+      disable-default-exclusions: true
+      check-type-assertions: true
+      check-blank: true
+    errchkjson:
+      report-no-exported: true
+    exhaustive:
+      default-signifies-exhaustive: true
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+    gosec:
+      config:
+        global:
+          audit: true
+    govet:
+      enable:
+        - atomicalign
+        - bools
+        - buildtag
+        - cgocall
+        - composites
+        - copylocks
+        - deepequalerrors
+        - directive
+        - errorsas
+        - httpresponse
+        - ifaceassert
+        - loopclosure
+        - lostcancel
+        - nilfunc
+        - printf
+        - shift
+        - sigchanyzer
+        - slog
+        - stdmethods
+        - stringintconv
+        - structtag
+        - testinggoroutine
+        - tests
+        - timeformat
+        - unmarshal
+        - unreachable
+        - unsafeptr
+        - unusedresult
+      disable:
+        - shadow
+        - fieldalignment
+    grouper:
+      import-require-single-import: true
+      import-require-grouping: true
+    misspell:
+      locale: US
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    revive:
+      confidence: 0.8
+      severity: warning
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+          arguments:
+            - disableStutteringCheck: true
+        - name: indent-error-flow
+        - name: increment-decrement
+          arguments:
+            - allowCommonInitialisms: true
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      extra-rules: true
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
