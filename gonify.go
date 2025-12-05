@@ -5,14 +5,14 @@ import (
 	"mime"
 	"net/http"
 
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/log"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 // Config defines the config for middleware.
 type Config struct {
 	// Optional. Default: nil
-	Next func(c fiber.Ctx) bool
+	Next func(c *fiber.Ctx) bool
 
 	// Optional. Default: false
 	SuppressWarnings bool
@@ -54,7 +54,7 @@ func New(config ...Config) fiber.Handler {
 	m := createMinifier(s)
 
 	// Return middleware handler
-	return func(c fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
 		if cfg.Next != nil && cfg.Next(c) {
 			return c.Next()
 		}
@@ -124,8 +124,20 @@ func configDefault(config ...Config) Config {
 		return ConfigDefault
 	}
 
-	// Override default config
-	cfg := config[0]
+	// Start with defaults and override provided values
+	cfg := ConfigDefault
+
+	provided := config[0]
+
+	// Override all provided values
+	cfg.Next = provided.Next
+	cfg.SuppressWarnings = provided.SuppressWarnings
+	cfg.MinifyHTML = provided.MinifyHTML
+	cfg.MinifyCSS = provided.MinifyCSS
+	cfg.MinifyJS = provided.MinifyJS
+	cfg.MinifyJSON = provided.MinifyJSON
+	cfg.MinifyXML = provided.MinifyXML
+	cfg.MinifySVG = provided.MinifySVG
 
 	return cfg
 }
