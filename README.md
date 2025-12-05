@@ -1,11 +1,17 @@
-# ✨ Gonify Middleware for Fiber ⚡
+# ✨ Gonify Middleware for Go Frameworks ⚡
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/NarmadaWeb/gonify)](https://goreportcard.com/report/github.com/NarmadaWeb/gonify)
 [![GoDoc](https://godoc.org/github.com/NarmadaWeb/gonify?status.svg)](https://godoc.org/github.com/NarmadaWeb/gonify)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Fiber](https://img.shields.io/badge/Fiber-v2-9cf)
+![Go](https://img.shields.io/badge/Go-v1.18+-blue)
 
-A [Fiber](https://gofiber.io/) middleware that automatically minifies HTTP responses before sending them to clients. Powered by the efficient [tdewolff/minify/v2](https://github.com/tdewolff/minify) library.
+A middleware for multiple Go frameworks that automatically minifies HTTP responses before sending them to clients. Powered by the efficient [tdewolff/minify/v2](https://github.com/tdewolff/minify) library.
+
+Supports:
+- **Fiber**
+- **Gin**
+- **Standard Library (net/http)**
+- **Chi** (via net/http compatibility)
 
 🔹 Reduces transferred data size
 🔹 Saves bandwidth
@@ -17,20 +23,16 @@ A [Fiber](https://gofiber.io/) middleware that automatically minifies HTTP respo
 * ⚙️ Easy configuration to enable/disable specific minification types
 * ⏭️ Next option to skip middleware for specific routes/conditions
 * 🛡️ Safe error handling - original response sent if minification fails
-* 🧩 Seamless Fiber v2 integration
-* 📝 Built-in Fiber logger for warnings/errors
 
 ## 📦 Installation
 
 ```bash
-go get github.com/NarmadaWeb/gonify/v2
+go get github.com/NarmadaWeb/gonify/v3
 ```
 
 ## 🛠️ Usage
 
-### Basic Usage (Default Configuration)
-
-The simplest way is using default configuration which enables minification for all supported content types.
+### Fiber
 
 ```go
 package main
@@ -38,151 +40,98 @@ package main
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/NarmadaWeb/gonify/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/NarmadaWeb/gonify/v3"
 )
 
 func main() {
 	app := fiber.New()
-	app.Use(logger.New()) // Optional: logger
 
-	// Use gonify middleware with default config
-	app.Use(gonify.New())
+	// Use gonify middleware
+	app.Use(gonify.New(gonify.Config{
+		MinifyHTML: true,
+	}))
 
-	// Define your routes
-	app.Get("/", func(c *fiber.Ctx) error {
-		c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
+	app.Get("/", func(c fiber.Ctx) error {
+		c.Set("Content-Type", "text/html")
 		return c.SendString("<html><body><h1>Hello, Minified World!</h1></body></html>")
 	})
-
-	app.Get("/styles.css", func(c *fiber.Ctx) error {
-        c.Set(fiber.HeaderContentType, "text/css; charset=utf-8")
-        return c.SendString("body { /* comment */ color: #ff0000; padding: 10px; }")
-    })
-
-    app.Get("/data.json", func(c *fiber.Ctx) error {
-        c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-        return c.SendString(`{ "message": "This is   extra   spaced   JSON." }`)
-    })
 
 	log.Fatal(app.Listen(":3000"))
 }
 ```
 
-### 🔧 Custom Configuration
-
-Provide a minify.Config struct to New() for custom behavior.
+### Gin
 
 ```go
 package main
 
 import (
-	"log"
-	"strings"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/NarmadaWeb/gonify/v2"
+	"net/http"
+	"github.com/gin-gonic/gin"
+	"github.com/NarmadaWeb/gonify/v3"
 )
 
 func main() {
-	app := fiber.New()
-	app.Use(logger.New())
+	r := gin.New()
 
-	app.Use(gonify.New(gonify.Config{
-		MinifyHTML:       true,
-		MinifyCSS:        true,
-		MinifyJS:         false, // Disable JS minification
-		MinifyJSON:       true,
-		MinifyXML:        false, // Disable XML minification
-		MinifySVG:        true,
-		SuppressWarnings: false,
-		Next: func(c *fiber.Ctx) bool {
-			return strings.HasPrefix(c.Path(), "/api/raw/")
-		},
+	// Use gonify middleware
+	r.Use(gonify.NewGin(gonify.GinConfig{
+		Settings: gonify.Settings{MinifyHTML: true},
 	}))
 
-	app.Get("/", func(c *fiber.Ctx) error {
-        c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
-        return c.SendString("<html><!-- comment --><body>   <h1>Will be minified</h1>   </body></html>")
-    })
+	r.GET("/", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/html", []byte("<html><body><h1>Hello, Minified World!</h1></body></html>"))
+	})
 
-    app.Get("/script.js", func(c *fiber.Ctx) error {
-        c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJavaScriptCharsetUTF8)
-        return c.SendString("function hello() { /* comment */ console.log('Not minified'); }")
-    })
+	r.Run(":3000")
+}
+```
 
-    app.Get("/api/raw/data", func(c *fiber.Ctx) error {
-        c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
-        return c.SendString(`{ "raw": true,    "spacing": "preserved" }`)
-    })
+### Standard Library / Chi
 
-	log.Fatal(app.Listen(":3000"))
+```go
+package main
+
+import (
+	"net/http"
+	"github.com/NarmadaWeb/gonify/v3"
+)
+
+func main() {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("<html><body><h1>Hello, Minified World!</h1></body></html>"))
+	})
+
+	// Wrap the mux with gonify
+	handler := gonify.NewHandler(gonify.HTTPConfig{
+		Settings: gonify.Settings{MinifyHTML: true},
+	})(mux)
+
+	http.ListenAndServe(":3000", handler)
 }
 ```
 
 ## ⚙️ Configuration
 
-Configure the middleware using minify.Config struct:
+The `Settings` struct is shared across all frameworks:
 
 ```go
-type Config struct {
-    // Next: Function to determine if middleware should be skipped
-    // Returns true to skip middleware for the request
-    // Default: nil (always run)
-    Next func(c *fiber.Ctx) bool
-
-    // SuppressWarnings: If true, minification errors will be logged
-    // as WARN and original response sent. If false (default), errors
-    // will be logged as ERROR and original response sent.
-    // Default: false
-    SuppressWarnings bool
-
-    // MinifyHTML: Enable for 'text/html'
-    // Default: true
-    MinifyHTML bool
-
-    // MinifyCSS: Enable for 'text/css'
-    // Default: true
-    MinifyCSS bool
-
-    // MinifyJS: Enable for JavaScript content types
-    // Default: true
-    MinifyJS bool
-
-    // MinifyJSON: Enable for JSON content types
-    // Default: true
-    MinifyJSON bool
-
-    // MinifyXML: Enable for XML content types
-    // Default: true
-    MinifyXML bool
-
-    // MinifySVG: Enable for 'image/svg+xml'
-    // Default: true
-    MinifySVG bool
+type Settings struct {
+	SuppressWarnings bool // Default: false
+	MinifyHTML       bool // Default: true
+	MinifyCSS        bool // Default: true
+	MinifyJS         bool // Default: true
+	MinifyJSON       bool // Default: false
+	MinifyXML        bool // Default: false
+	MinifySVG        bool // Default: false
 }
 ```
 
-
-## 🔧 Default Configuration
-
-When calling minify.New() without arguments:
-
-```go
-// ConfigDefault is the default config
-var ConfigDefault = Config{
-	Next:             nil,
-	SuppressWarnings: false,
-	MinifyHTML:       true,
-	MinifyCSS:        true,
-	MinifyJS:         true,
-	MinifyJSON:       false,
-	MinifyXML:        false,
-	MinifySVG:        false,
-}
-```
+Framework specific configs (e.g. `Config`, `GinConfig`, `HTTPConfig`) embed `Settings` and add a `Next` function for conditional skipping.
 
 ## 🤝 Contributing
 
