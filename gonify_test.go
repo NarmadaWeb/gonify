@@ -279,5 +279,126 @@ func TestConfigDefault(t *testing.T) {
 	assert.Equal(t, ConfigDefault, cfg)
 
 	cfg2 := configDefault(Config{MinifyHTML: false})
-	assert.Equal(t, Config{MinifyHTML: false, MinifyCSS: false, MinifyJS: false, MinifyJSON: false, MinifyXML: false, MinifySVG: false}, cfg2)
+	assert.Equal(t, Config{MinifyHTML: false, MinifyCSS: false, MinifyJS: false, MinifyJSON: false, MinifyXML: false, MinifySVG: false, MaxBodySize: 10 * 1024 * 1024}, cfg2)
+}
+
+func TestFiberMaxBodySize(t *testing.T) {
+	app := fiber.New()
+
+	app.Use(New(Config{
+		MinifyHTML:  true,
+		MaxBodySize: 10, // Very small limit
+	}))
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		c.Set("Content-Type", "text/html")
+		return c.SendString("<html><body><h1>This is longer than 10 bytes</h1></body></html>")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+
+	body, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "<html><body><h1>This is longer than 10 bytes</h1></body></html>", string(body)) // Not minified
+}
+
+func TestGinMaxBodySize(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(NewGin(GinConfig{
+		Settings: Settings{MinifyHTML: true, MaxBodySize: 10},
+	}))
+
+	r.GET("/", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/html", []byte("<html><body><h1>This is longer than 10 bytes</h1></body></html>"))
+	})
+
+	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, "<html><body><h1>This is longer than 10 bytes</h1></body></html>", w.Body.String())
+}
+
+func TestGinNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(NewGin(GinConfig{
+		Settings: Settings{MinifyHTML: true},
+	}))
+
+	r.GET("/404", func(c *gin.Context) {
+		c.String(http.StatusNotFound, "Not Found Body")
+	})
+
+	req, _ := http.NewRequest(http.MethodGet, "/404", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Equal(t, "Not Found Body", w.Body.String())
+}
+
+func TestStdLibHeaderDeletion(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-To-Be-Deleted", "true")
+		w.Header().Set("Content-Type", "text/html")
+		w.Header().Del("X-To-Be-Deleted")
+		w.Write([]byte("<html><body>Hello</body></html>"))
+	})
+
+	handler := NewHandler(HTTPConfig{
+		Settings: Settings{MinifyHTML: true},
+	})(mux)
+
+	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	assert.Equal(t, "", w.Header().Get("X-To-Be-Deleted"))
+}
+
+func TestFiberGzipEncoding(t *testing.T) {
+	app := fiber.New()
+
+	app.Use(New(Config{
+		MinifyHTML: true,
+	}))
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		c.Set("Content-Type", "text/html")
+		c.Set("Content-Encoding", "gzip")
+		return c.SendString("<html>  <body>  <h1>Gzipped content</h1>  </body>  </html>")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+
+	body, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "<html>  <body>  <h1>Gzipped content</h1>  </body>  </html>", string(body)) // Not minified because of gzip
+}
+
+func TestStdLibMaxBodySize(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("<html><body><h1>This is longer than 10 bytes</h1></body></html>"))
+	})
+
+	handler := NewHandler(HTTPConfig{
+		Settings: Settings{MinifyHTML: true, MaxBodySize: 10},
+	})(mux)
+
+	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	assert.Equal(t, "<html><body><h1>This is longer than 10 bytes</h1></body></html>", w.Body.String())
 }

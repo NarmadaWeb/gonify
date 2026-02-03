@@ -27,6 +27,9 @@ func NewGin(config ...GinConfig) gin.HandlerFunc {
 	cfg := DefaultGinConfig
 	if len(config) > 0 {
 		cfg = config[0]
+		if cfg.MaxBodySize == 0 {
+			cfg.MaxBodySize = DefaultSettings.MaxBodySize
+		}
 	}
 
 	m := createMinifier(cfg.Settings)
@@ -45,27 +48,44 @@ func NewGin(config ...GinConfig) gin.HandlerFunc {
 
 		status := c.Writer.Status()
 		if status < http.StatusOK || status >= http.StatusMultipleChoices || status == http.StatusNoContent {
+			w.ResponseWriter.Write(w.body.Bytes())
 			return
 		}
 
 		contentType := c.Writer.Header().Get("Content-Type")
 		if len(contentType) == 0 {
+			w.ResponseWriter.Write(w.body.Bytes())
 			return
 		}
 
 		mediaType, _, err := mime.ParseMediaType(contentType)
 		if err != nil {
 			// Cannot parse, ignore
+			w.ResponseWriter.Write(w.body.Bytes())
 			return
 		}
 
-		if !shouldMinify(mediaType, cfg.Settings) {
+		encoding := c.Writer.Header().Get("Content-Encoding")
+		if !shouldMinify(mediaType, encoding, cfg.Settings) {
+			w.ResponseWriter.Write(w.body.Bytes())
 			return
 		}
 
 		// Minify
 		originalBody := w.body.Bytes()
 		if len(originalBody) == 0 {
+			return
+		}
+
+		/**
+		 * SECURITY FIX: HIGH – Unbounded Response Buffering (DoS)
+		 * Risk: Attacker can trigger OOM by inducing large buffered responses.
+		 * Attack vector: Triggering large HTML/JSON responses that the middleware buffers.
+		 * Mitigation: Enforces MaxBodySize limit to prevent excessive memory allocation.
+		 * References: OWASP A05:2021, CWE-770
+		 */
+		if cfg.MaxBodySize > 0 && len(originalBody) > cfg.MaxBodySize {
+			w.ResponseWriter.Write(originalBody)
 			return
 		}
 

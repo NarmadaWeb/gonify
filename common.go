@@ -23,6 +23,11 @@ type Settings struct {
 	MinifyJSON bool
 	MinifyXML  bool
 	MinifySVG  bool
+
+	// MaxBodySize defines the maximum body size to minify in bytes.
+	// Responses larger than this will be skipped to prevent OOM.
+	// Default: 10 * 1024 * 1024 (10MB)
+	MaxBodySize int
 }
 
 var (
@@ -48,6 +53,7 @@ var DefaultSettings = Settings{
 	MinifyJSON:       false,
 	MinifyXML:        false,
 	MinifySVG:        false,
+	MaxBodySize:      10 * 1024 * 1024, // 10MB
 }
 
 // Function to initialize regex patterns once
@@ -87,7 +93,11 @@ func createMinifier(s Settings) *minify.M {
 	return minifier
 }
 
-func shouldMinify(mediaType string, s Settings) bool {
+func shouldMinify(mediaType string, encoding string, s Settings) bool {
+	if encoding != "" && encoding != "identity" {
+		return false
+	}
+
 	switch {
 	case s.MinifyHTML && mediaType == contentTypes.html:
 		return true
