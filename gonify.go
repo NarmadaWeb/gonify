@@ -23,6 +23,10 @@ type Config struct {
 	MinifyJSON bool
 	MinifyXML  bool
 	MinifySVG  bool
+
+	// MaxBodySize defines the maximum body size to minify in bytes.
+	// Default: 10 * 1024 * 1024 (10MB)
+	MaxBodySize int
 }
 
 // ConfigDefault is the default config
@@ -35,6 +39,7 @@ var ConfigDefault = Config{
 	MinifyJSON:       false,
 	MinifyXML:        false,
 	MinifySVG:        false,
+	MaxBodySize:      10 * 1024 * 1024,
 }
 
 // New creates a new middleware handler
@@ -50,6 +55,7 @@ func New(config ...Config) fiber.Handler {
 		MinifyJSON:       cfg.MinifyJSON,
 		MinifyXML:        cfg.MinifyXML,
 		MinifySVG:        cfg.MinifySVG,
+		MaxBodySize:      cfg.MaxBodySize,
 	}
 	m := createMinifier(s)
 
@@ -84,7 +90,8 @@ func New(config ...Config) fiber.Handler {
 		}
 
 		// Check if the media type should be minified based on config
-		if !shouldMinify(mediaType, s) {
+		encoding := string(c.Response().Header.Peek("Content-Encoding"))
+		if !shouldMinify(mediaType, encoding, s) {
 			return nil
 		}
 
@@ -94,11 +101,22 @@ func New(config ...Config) fiber.Handler {
 			return nil // Nothing to minify
 		}
 
+		/**
+		 * SECURITY FIX: HIGH – Unbounded Response Buffering (DoS)
+		 * Risk: Attacker can trigger OOM by inducing large buffered responses.
+		 * Attack vector: Triggering large HTML/JSON responses that the middleware buffers.
+		 * Mitigation: Enforces MaxBodySize limit to prevent excessive memory allocation.
+		 * References: OWASP A05:2021, CWE-770
+		 */
+		if s.MaxBodySize > 0 && len(originalBody) > s.MaxBodySize {
+			return nil
+		}
+
 		// Minify the body into a buffer
 		var minifiedBuffer bytes.Buffer
 		if err := m.Minify(mediaType, &minifiedBuffer, bytes.NewReader(originalBody)); err != nil {
 			if !cfg.SuppressWarnings {
-				log.Errorf("Minify: Failed to minify type '%s': %v", mediaType, err)
+				log.Errorf("Minify: Failed to minify type '%s'", mediaType)
 			}
 			return nil
 		}
@@ -138,6 +156,9 @@ func configDefault(config ...Config) Config {
 	cfg.MinifyJSON = provided.MinifyJSON
 	cfg.MinifyXML = provided.MinifyXML
 	cfg.MinifySVG = provided.MinifySVG
+	if provided.MaxBodySize > 0 {
+		cfg.MaxBodySize = provided.MaxBodySize
+	}
 
 	return cfg
 }

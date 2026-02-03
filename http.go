@@ -25,6 +25,9 @@ func NewHandler(config ...HTTPConfig) func(http.Handler) http.Handler {
 	cfg := DefaultHTTPConfig
 	if len(config) > 0 {
 		cfg = config[0]
+		if cfg.MaxBodySize == 0 {
+			cfg.MaxBodySize = DefaultSettings.MaxBodySize
+		}
 	}
 
 	m := createMinifier(cfg.Settings)
@@ -39,16 +42,10 @@ func NewHandler(config ...HTTPConfig) func(http.Handler) http.Handler {
 			bw := &bodyWriter{
 				ResponseWriter: w,
 				body:           bytes.NewBuffer(nil),
-				headers:        make(http.Header),
 				statusCode:     http.StatusOK,
 			}
 
 			next.ServeHTTP(bw, r)
-
-			// Copy collected headers to original writer
-			for k, v := range bw.headers {
-				w.Header()[k] = v
-			}
 
 			status := bw.statusCode
 			if status < http.StatusOK || status >= http.StatusMultipleChoices || status == http.StatusNoContent {
@@ -57,7 +54,7 @@ func NewHandler(config ...HTTPConfig) func(http.Handler) http.Handler {
 				return
 			}
 
-			contentType := bw.Header().Get("Content-Type")
+			contentType := w.Header().Get("Content-Type")
 			if len(contentType) == 0 {
 				w.WriteHeader(status)
 				w.Write(bw.body.Bytes())
@@ -71,7 +68,8 @@ func NewHandler(config ...HTTPConfig) func(http.Handler) http.Handler {
 				return
 			}
 
-			if !shouldMinify(mediaType, cfg.Settings) {
+			encoding := w.Header().Get("Content-Encoding")
+			if !shouldMinify(mediaType, encoding, cfg.Settings) {
 				w.WriteHeader(status)
 				w.Write(bw.body.Bytes())
 				return
@@ -80,6 +78,19 @@ func NewHandler(config ...HTTPConfig) func(http.Handler) http.Handler {
 			originalBody := bw.body.Bytes()
 			if len(originalBody) == 0 {
 				w.WriteHeader(status)
+				return
+			}
+
+			/**
+			 * SECURITY FIX: HIGH – Unbounded Response Buffering (DoS)
+			 * Risk: Attacker can trigger OOM by inducing large buffered responses.
+			 * Attack vector: Triggering large HTML/JSON responses that the middleware buffers.
+			 * Mitigation: Enforces MaxBodySize limit to prevent excessive memory allocation.
+			 * References: OWASP A05:2021, CWE-770
+			 */
+			if cfg.MaxBodySize > 0 && len(originalBody) > cfg.MaxBodySize {
+				w.WriteHeader(status)
+				w.Write(originalBody)
 				return
 			}
 
@@ -106,12 +117,7 @@ func NewHandler(config ...HTTPConfig) func(http.Handler) http.Handler {
 type bodyWriter struct {
 	http.ResponseWriter
 	body       *bytes.Buffer
-	headers    http.Header
 	statusCode int
-}
-
-func (w *bodyWriter) Header() http.Header {
-	return w.headers
 }
 
 func (w *bodyWriter) Write(b []byte) (int, error) {
